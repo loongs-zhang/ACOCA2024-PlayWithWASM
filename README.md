@@ -26,14 +26,14 @@ Dubbo的SPI扩展只能使用Java语言编写，dubbo-wasm模块旨在克服这�
 | 典型例子    | [apisix](https://github.com/apache/apisix)                                              | [dubbo-go](https://github.com/apache/dubbo-go) | [higress](https://github.com/alibaba/higress)      | [opendal](https://github.com/apache/opendal) / [netty](https://github.com/netty/netty) |
 | 新语言扩展难度 | 无                                                                                       | 火葬场                                            | 增加新语言打WASM库的脚本或代码即可                                | 增加新语言打动态链接库的脚本或代码即可                                                                    |
 | 开发难度    | 低                                                                                       | 低                                              | 中，需要熟悉跨平台开发(unix/windows)                          | 高，需要额外学习JNI相关知识，而且需要熟悉跨平台开发(unix/windows)                                              |
-| 优点      | 通过网络交互完全解耦java和底层                                                                       | 既对开发者友好，又没有性能损耗                                | 性能开销相对较低                                           | 无性能损耗，跟Java生态融合很好，在底层创建Java对象、直接读取Java对象的值不是梦                                          |
+| 优点      | 通过网络交互完全解耦java和底层                                                                       | 既对开发者友好，又没有性能损耗                                | 性能开销相对较低                                           | 性能损耗极低，跟Java生态融合很好，在底层创建Java对象、直接读取Java对象的值不是梦                                         |
 | 典型缺点    | 极限场景下光协议栈就有约20%的性能损耗(可参考《深入理解Linux网络：修炼底层内功，掌握高性能原理》)，再加上序列化带来的性能损耗，而且如何本地部署其他语言的服务也是问题 | 火葬场级别的工作量                                      | 不同语言，打成WASM库的方式都不一样，无法统一；另外每次跟WASM交互都会有序列化&反序列化的损耗 | 不同语言，打成动态链接库的方式都不一样，无法统一，而且有些语言无法打成动态链接库                                               |
 
 ## 本地转发
 
 以下是个简单的本地转发SPI实现例子。
 
-服务端
+local rust server
 
 ```rust
 use std::io::prelude::*;
@@ -51,16 +51,18 @@ fn main() {
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 512];
     stream.read(&mut buffer).unwrap();
-    // 实际可能需要反序列化本地client请求，转换为真实brpc服务发起泛化调用需要的参数
+    // Maybe need to deserialize local client requests and
+    // convert them into the parameters required for brpc 
+    // client to initiate generic calls
     println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
-    // 实际响应数据可能需要序列化
+    // The response data may require serialization
     let response = "Hello from local brpc server";
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
 ```
 
-客户端
+java client
 
 ```java
 public class BrpcInvoker<T> extends AbstractInvoker<T> {
@@ -70,15 +72,18 @@ public class BrpcInvoker<T> extends AbstractInvoker<T> {
         String hostName = "127.0.0.1";
         int portNumber = 7878;
         try (
-                Socket echoSocket = new Socket(hostName, portNumber);
-                PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()))
+                Socket socket = new Socket(hostName, portNumber);
+                PrintWriter out = new PrintWriter(
+                        socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream()))
         ) {
-            // 实际发起本地请求时，可能需要序列化
+            // Serialization may be required when initiating requests
             out.println("Hello, local brpc server!");
             String response = in.readLine();
             System.out.println("Server response: " + response);
-            // 拿到BrpcServer的响应，并反序列化为Result返回
+            // Get the response from local brpc client 
+            // and deserialize it then return
         } catch (Exception e) {
             System.out.println("Exception caught when trying to listen on port "
                     + portNumber + " or listening for a connection");
