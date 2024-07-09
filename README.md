@@ -106,9 +106,7 @@ JNI是`Java Native Interface`的缩写，通过使用`native`关键字定义方�
 
 ```java
 public class Main {
-
     public static native String helloJni();
-
 }
 ```
 
@@ -151,12 +149,12 @@ JNIEXPORT jstring JNICALL Java_Main_helloJni
 
 #### step3.编写native的实现`MainImpl.c`
 
+c part
 ```c
 #include <jni.h>
 #include <jni_md.h>
 #include <jvmti.h>
 #include "Main.h"
-
 JNIEXPORT jstring JNICALL Java_Main_helloJni
         (JNIEnv *env, jclass klass) {
     return env->NewStringUTF("Hello JNI");
@@ -195,18 +193,15 @@ PS：实际使用时，包含native方法的类可能会被打成jar包并上传
 
 直接像调用一个java方法一样调用它就好了，下面附上完整代码：
 
+java part
 ```java
 import java.net.URL;
-
 public class Main {
-
     static {
         final URL url = Main.class.getResource("jni.dylib");
         System.load(url.getPath());
     }
-
     public static native String helloJni();
-
     public static void main(String[] args) {
         System.out.println(helloJni());
     }
