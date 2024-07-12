@@ -65,10 +65,13 @@ fn handle_connection(mut stream: TcpStream) {
 java client
 
 ```java
-public class BrpcInvoker<T> extends AbstractInvoker<T> {
+public class BrpcPlugin extends AbstractShenyuPlugin {
     //......
     @Override
-    protected Result doInvoke(Invocation invocation) {
+    protected Mono<Void> doExecute(final ServerWebExchange exchange,
+                                   final ShenyuPluginChain chain,
+                                   final SelectorData selector,
+                                   final RuleData rule) {
         String hostName = "127.0.0.1";
         int portNumber = 7878;
         try (
