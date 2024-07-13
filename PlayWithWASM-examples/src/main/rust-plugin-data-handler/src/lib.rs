@@ -47,26 +47,3 @@ pub unsafe extern "C" fn removePlugin(arg_id: i64) {
     impls(arg_id);
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn handlerSelector(arg_id: i64) {
-    eprintln!("rust side-> handlerSelector");
-    impls(arg_id);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn removeSelector(arg_id: i64) {
-    eprintln!("rust side-> removeSelector");
-    impls(arg_id);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn handlerRule(arg_id: i64) {
-    eprintln!("rust side-> handlerRule");
-    impls(arg_id);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn removeRule(arg_id: i64) {
-    eprintln!("rust side-> removeRule");
-    impls(arg_id);
-}

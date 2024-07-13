@@ -46,9 +46,3 @@ pub unsafe extern "C" fn removeMetaData(arg_id: i64) {
     eprintln!("rust side-> removeMetaData");
     impls(arg_id);
 }
-
-#[no_mangle]
-pub unsafe extern "C" fn refresh() {
-    eprintln!("rust side-> refresh");
-    impls(0);
-}
