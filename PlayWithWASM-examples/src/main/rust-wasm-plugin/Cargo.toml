@@ -18,7 +18,7 @@
 #
 
 [package]
-name = "rust-shenyu-wasm-plugin"
+name = "rust-wasm-plugin"
 version = "0.1.0"
 edition = "2021"
 

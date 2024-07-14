@@ -7,13 +7,13 @@
 3. generate the wasm file
 
 ```shell
-cd {PlayWithWASM-examples}/src/main/rust-meta-data-handler
+cd {PlayWithWASM-examples}/src/main/rust-wasm-plugin
 cargo build --target wasm32-wasi --release
 ```
 
 then you will see the wasm file
-in `{PlayWithWASM-examples}/src/main/rust-meta-data-handler/target/wasm32-wasi/release/rust_wasm_discovery_handler_plugin.wasm`
+in `{PlayWithWASM-examples}/src/main/rust-wasm-plugin/target/wasm32-wasi/release/rust_wasm_plugin.wasm`
 
 4. rename the wasm file
 
-rename the file to `org.apache.shenyu.plugin.brpc.BrpcMetadataHandler.wasm`
+rename the file to `org.apache.shenyu.plugin.rust.RustHttpClientPlugin.wasm`

@@ -1,26 +1,40 @@
-package org.apache.shenyu.handler;
+package org.apache.shenyu.plugin.rust;
 
 import io.github.kawamuray.wasmtime.Func;
 import io.github.kawamuray.wasmtime.Store;
 import io.github.kawamuray.wasmtime.WasmFunctions;
 import io.github.kawamuray.wasmtime.WasmValType;
-import org.apache.shenyu.common.dto.MetaData;
-import org.apache.shenyu.plugin.wasm.base.handler.AbstractWasmMetaDataHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.shenyu.plugin.api.ShenyuPluginChain;
+import org.apache.shenyu.plugin.wasm.api.AbstractWasmPlugin;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author loongs-zhang
- * @date 2024/7/13 17:29
+ * @date 2024/7/13 17:28
  */
-public class BrpcMetaDataHandler extends AbstractWasmMetaDataHandler {
+public class RustHttpClientPlugin extends AbstractWasmPlugin {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BrpcMetaDataHandler.class);
+    private static final Map<Long, String> RESULTS = new ConcurrentHashMap<>();
+
+    @Override
+    protected Mono<Void> doExecute(final ServerWebExchange exchange, final ShenyuPluginChain chain, final Long argumentId) {
+        final String result = RESULTS.get(argumentId);
+        return chain.execute(exchange);
+    }
+
+    @Override
+    protected Long getArgumentId(final ServerWebExchange exchange, final ShenyuPluginChain chain) {
+        UUID uuid = UUID.randomUUID();
+        return uuid.getMostSignificantBits() ^ uuid.getLeastSignificantBits();
+    }
 
     @Override
     protected Map<String, Func> initWasmCallJavaFunc(final Store<Void> store) {
@@ -43,6 +57,7 @@ public class BrpcMetaDataHandler extends AbstractWasmMetaDataHandler {
                         bytes[i] = buf.get(addr.intValue() + i);
                     }
                     String result = new String(bytes, StandardCharsets.UTF_8);
+                    RESULTS.put(argId, result);
                     LOG.info("java side->" + result);
                     return 0;
                 }));
@@ -50,12 +65,12 @@ public class BrpcMetaDataHandler extends AbstractWasmMetaDataHandler {
     }
 
     @Override
-    public String rpcType() {
-        return "brpc";
+    public int getOrder() {
+        return 210;
     }
 
     @Override
-    protected Long getArgumentId(final MetaData metaData) {
-        return 0L;
+    public String named() {
+        return "rustHttpClient";
     }
 }
