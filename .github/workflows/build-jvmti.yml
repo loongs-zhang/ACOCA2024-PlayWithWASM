@@ -19,7 +19,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: lib
-          path: jni/target/classes/lib*
+          path: jni/target/classes/*.so
           if-no-files-found: error
 
   linux-aarch64:
@@ -48,7 +48,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: lib
-          path: jni/target/classes/lib*
+          path: jni/target/classes/*.so
           if-no-files-found: error
 
   mac:
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: lib
-          path: jni/target/classes/lib*
+          path: jni/target/classes/*.dylib
           if-no-files-found: error
 
   windows:
